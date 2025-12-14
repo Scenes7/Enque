@@ -24,13 +24,13 @@ socket.on('connect', () => {
 window.addEventListener('storage', (e) => {
     if (e.key === 'queue_ticket') {
         if (e.newValue) {
-            // Another tab joined!
+            // Handle user opening multiple tabs without joining
             console.log('Another tab joined, syncing state...');
             myName = "Synced User";
             modal.classList.add('hidden');
             socket.emit('reconnect_user', e.newValue);
         } else {
-            // Ticket removed (invalidated) in another tab
+            // Ticket removed in another tab
             console.log('Ticket removed in another tab');
             myTicketNumber = null;
             modal.classList.remove('hidden');
@@ -40,7 +40,7 @@ window.addEventListener('storage', (e) => {
 });
 
 joinBtn.addEventListener('click', () => {
-    // Pre-flight check: Did we join in another tab just now?
+    // Check for other tab
     if (localStorage.getItem('queue_ticket')) {
         console.log('Already joined in another tab, aborting new join request.');
         modal.classList.add('hidden');
@@ -69,14 +69,12 @@ socket.on('ticket_assigned', (data) => {
     document.getElementById('ticket-id').textContent = '#' + myTicketNumber;
     document.getElementById('my-number').classList.remove('loader');
 
-    // If modal was open/visible (e.g. we reconnected and it was hiding, or we just joined), ensure it's hidden
     modal.classList.add('hidden');
 
     updateStatus(data.servingNumber);
 });
 
 socket.on('invalid_ticket', () => {
-    // Server said our ticket is junk (e.g. server restart)
     console.log('Invalid ticket, clearing storage');
     localStorage.removeItem('queue_ticket');
     myTicketNumber = null;
@@ -101,13 +99,6 @@ socket.on('ticket_removed_broadcast', (removedId) => {
 
 function handleRemoval() {
     console.log("You have been removed from the queue.");
-    // Clear storage so reloads don't try to reconnect to a dead/removed ticket immediately 
-    // (though server would reject it anyway, clearing it is cleaner or we can keep it to show "Removed" state?)
-    // User wants "removed" state update. So let's NOT clear it maybe?
-    // If we clear it, they go back to "Join" screen.
-    // If we keep it, we can show "Removed" forever until they clear cache?
-    // Let's keep it but show a persistent "Removed" UI.
-    // If they refresh, server emits 'ticket_removed' again, so it persists. OK.
 
     document.querySelector('h1').textContent = "Status";
     document.getElementById('my-number').textContent = "Removed";
@@ -119,12 +110,6 @@ function handleRemoval() {
 function updateStatus(servingStart) {
     if (myTicketNumber === null) return;
 
-    // If we are seeing "Removed" (manually set), don't overwrite it with queued status?
-    // But `myTicketNumber` is still set.
-    // We need a flag or just rely on server not sending updates for us? 
-    // The server still sends broadcast queue updates.
-    // We should check if we are removed? Client doesn't know easily unless we track state.
-    // Let's rely on the fact that if we are removed, we shouldn't care about queue updates.
     if (document.getElementById('my-number').textContent === "Removed") return;
 
     const myPosition = myTicketNumber - servingStart + 1;
@@ -137,8 +122,7 @@ function updateStatus(servingStart) {
         myNumberElem.textContent = "Served";
         peopleAheadElem.textContent = "0";
     } else {
-        // Still waiting
-        // Display #Position (e.g. #1, #2)
+        // Still waiting, display #Position
         document.querySelector('h1').textContent = "Your Position";
         myNumberElem.textContent = '#' + myPosition;
 

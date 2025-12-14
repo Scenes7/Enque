@@ -19,10 +19,10 @@ try {
     console.warn("Could not read admin_password file, using default.");
 }
 
-let ticketCounter = 0; // The latest ticket number issued
-let servingCounter = 1; // The ticket number currently being served
+let ticketCounter = 0; // Latest ticket number
+let servingCounter = 1; // Ticket number currently served
 let tickets = {}; // Map ticketId -> Name
-let removedTickets = new Set(); // Track removed/banned tickets
+let removedTickets = new Set(); // Removed tickets
 
 io.on('connection', (socket) => {
     let isAdmin = false;
@@ -36,7 +36,6 @@ io.on('connection', (socket) => {
         socket.emit('ticket_assigned', {
             ticketNumber: myTicket,
             servingNumber: servingCounter,
-            // Calculate initial position
             position: (myTicket - servingCounter + 1)
         });
 
@@ -46,7 +45,6 @@ io.on('connection', (socket) => {
     socket.on('reconnect_user', (ticketId) => {
         const tid = parseInt(ticketId, 10);
 
-        // Check if user was explicitly removed
         if (removedTickets.has(tid)) {
             socket.emit('ticket_removed');
             return;
@@ -86,10 +84,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Old unsecured event - keeping for compatibility but it won't work effectively without auth check if we enforce it. 
-    // Actually, let's enforce it.
-    // socket.on('admin_connect', () => { ... }); // Removed/Superceded by admin_login
-
     socket.on('admin_next', () => {
         if (!isAdmin) {
             console.log("Unauthorized admin_next attempt");
@@ -110,8 +104,6 @@ io.on('connection', (socket) => {
         }
 
         const tid = parseInt(ticketId, 10);
-        // We allow removing even if they aren't in `tickets` simply to ban them if needed, 
-        // but typically they are in the list.
         removedTickets.add(tid);
 
         if (tickets[tid]) {
@@ -119,14 +111,12 @@ io.on('connection', (socket) => {
             broadcastUpdate();
         }
 
-        // Broadcast to everyone so the specific user can see they are removed
         io.emit('ticket_removed_broadcast', tid);
     });
 
     function broadcastUpdate() {
-        // Prepare list of first 20 people waiting
+        // First 20 people waiting
         let waitingList = [];
-        // Iterate from currently serving upwards
         for (let i = servingCounter; i <= ticketCounter; i++) {
             if (waitingList.length >= 20) break;
             if (tickets[i]) {

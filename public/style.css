@@ -85,7 +85,6 @@ h1 {
 .item-pos {
   font-weight: bold;
   color: var(--primary-color);
-  /* Corrected variable name */
 }
 
 .remove-btn {
@@ -94,11 +93,9 @@ h1 {
   outline: none;
   color: rgba(255, 255, 255, 0.5);
   font-size: 1.5rem;
-  /* Slightly larger X */
   cursor: pointer;
   line-height: 1;
   padding: 0 0.5rem;
-  /* Add touch target padding */
   margin-left: 1rem;
   transition: color 0.2s;
   display: flex;
@@ -110,13 +107,10 @@ h1 {
   color: #ff4d4d;
 }
 
-/* Modal styles overrides for admin */
-/* Target specific ID to ensure specificity */
 #admin-pass {
   font-size: 1.2rem;
   padding: 0.8rem;
   width: 60%;
-  /* Match button width logic if appropriate, or just standard wide input */
   margin-bottom: 1rem;
 }
 

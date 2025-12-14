@@ -23,9 +23,6 @@ socket.on('login_fail', () => {
     passInput.value = '';
 });
 
-// Identify as admin (will fail actions if not logged in via admin_login)
-// socket.emit('admin_connect'); // Removed
-
 socket.on('queue_update', (data) => {
     const serving = data.servingNumber;
     const last = data.lastTicket;
@@ -43,10 +40,8 @@ socket.on('queue_update', (data) => {
     listContainer.innerHTML = '';
 
     list.forEach((item, index) => {
-        // item has .number and .name
         const div = document.createElement('div');
         div.className = 'list-item';
-        // HTML structure with Remove button
         div.innerHTML = `
             <div class="item-left">
                 <span class="item-pos">#${item.number}</span> 
@@ -58,7 +53,7 @@ socket.on('queue_update', (data) => {
     });
 });
 
-// Expose removal function to window scope so onclick works
+// Fix onclick
 window.removeUser = function (ticketId) {
     if (confirm(`Remove ticket #${ticketId}?`)) {
         socket.emit('admin_remove_ticket', ticketId);

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Queue Management</h1>
+
+        <div style="margin-bottom: 2rem;">
+            <div class="info-text">Now Serving</div>
+            <div id="now-serving" class="number-display">#1</div>
+        </div>
+
+        <div class="queue-status">
+            <div class="info-text" style="margin-bottom: 2rem">People in Queue: <span id="queue-size">0</span></div>
+            <button id="next-btn">Next Customer</button>
+
+            <div class="info-text" style="margin-top: 2rem; text-align: left; font-size: 0.9rem;">Next 20 Customers:
+            </div>
+            <div id="waiting-list" class="waiting-list">
+                <!-- List items go here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+
+</html>

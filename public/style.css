@@ -1,0 +1,148 @@
+:root {
+  --bg-color: #121212;
+  --surface-color: #1e1e1e;
+  --primary-color: #bb86fc;
+  --text-color: #ffffff;
+  --text-secondary: #b0b0b0;
+  --overlay-bg: rgba(0, 0, 0, 0.85);
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.container {
+  background: rgba(30, 30, 30, 0.6);
+  backdrop-filter: blur(10px);
+  padding: 3rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+h1 {
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+  margin-bottom: 2rem;
+}
+
+.number-display {
+  font-size: 5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0;
+  line-height: 1;
+}
+
+.info-text {
+  margin-top: 1.5rem;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.queue-status {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+button {
+  background-color: var(--primary-color);
+  color: #000;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity 0.2s;
+  width: 100%;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.loader {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Modal for Name Entry */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--overlay-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.hidden {
+  display: none !important;
+}
+
+input[type="text"] {
+  background: #333;
+  border: 1px solid #444;
+  color: white;
+  padding: 1rem;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  width: 80%;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* Admin List */
+.waiting-list {
+  text-align: left;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 1rem;
+}
+
+.list-item {
+  padding: 0.5rem;
+  border-bottom: 1px solid #333;
+  display: flex;
+  justify-content: space-between;
+}
+
+.list-item:last-child {
+  border-bottom: none;
+}
+
+.item-pos {
+  color: var(--primary-color);
+  font-weight: bold;
+  margin-right: 1rem;
+}

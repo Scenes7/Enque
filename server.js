@@ -9,11 +9,23 @@ const os = require('os');
 
 app.use(express.static('public'));
 
+// Read admin password
+const fs = require('fs');
+let ADMIN_PASSWORD = "admin"; // Default
+try {
+    ADMIN_PASSWORD = fs.readFileSync('admin_password', 'utf8').trim();
+    console.log("Admin password loaded.");
+} catch (e) {
+    console.warn("Could not read admin_password file, using default.");
+}
+
 let ticketCounter = 0; // The latest ticket number issued
 let servingCounter = 1; // The ticket number currently being served
 let tickets = {}; // Map ticketId -> Name
+let removedTickets = new Set(); // Track removed/banned tickets
 
 io.on('connection', (socket) => {
+    let isAdmin = false;
 
     socket.on('request_ticket', (name) => {
         ticketCounter++;
@@ -33,6 +45,13 @@ io.on('connection', (socket) => {
 
     socket.on('reconnect_user', (ticketId) => {
         const tid = parseInt(ticketId, 10);
+
+        // Check if user was explicitly removed
+        if (removedTickets.has(tid)) {
+            socket.emit('ticket_removed');
+            return;
+        }
+
         if (tid > ticketCounter) {
             socket.emit('invalid_ticket');
             return;
@@ -57,16 +76,51 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('admin_connect', () => {
-        broadcastUpdate();
+    socket.on('admin_login', (password) => {
+        if (password === ADMIN_PASSWORD) {
+            isAdmin = true;
+            socket.emit('login_success');
+            broadcastUpdate(); // Send initial data
+        } else {
+            socket.emit('login_fail');
+        }
     });
 
+    // Old unsecured event - keeping for compatibility but it won't work effectively without auth check if we enforce it. 
+    // Actually, let's enforce it.
+    // socket.on('admin_connect', () => { ... }); // Removed/Superceded by admin_login
+
     socket.on('admin_next', () => {
+        if (!isAdmin) {
+            console.log("Unauthorized admin_next attempt");
+            return;
+        }
+
         if (servingCounter <= ticketCounter) {
             delete tickets[servingCounter];
             servingCounter++;
             broadcastUpdate();
         }
+    });
+
+    socket.on('admin_remove_ticket', (ticketId) => {
+        if (!isAdmin) {
+            console.log("Unauthorized admin_remove_ticket attempt");
+            return;
+        }
+
+        const tid = parseInt(ticketId, 10);
+        // We allow removing even if they aren't in `tickets` simply to ban them if needed, 
+        // but typically they are in the list.
+        removedTickets.add(tid);
+
+        if (tickets[tid]) {
+            delete tickets[tid];
+            broadcastUpdate();
+        }
+
+        // Broadcast to everyone so the specific user can see they are removed
+        io.emit('ticket_removed_broadcast', tid);
     });
 
     function broadcastUpdate() {

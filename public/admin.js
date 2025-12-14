@@ -1,7 +1,30 @@
 const socket = io();
 
-// Identify as admin
-socket.emit('admin_connect');
+// UI Elements
+const loginModal = document.getElementById('login-modal');
+const passInput = document.getElementById('admin-pass');
+const loginBtn = document.getElementById('login-btn');
+
+loginBtn.addEventListener('click', () => {
+    const password = passInput.value;
+    socket.emit('admin_login', password);
+});
+
+passInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') loginBtn.click();
+});
+
+socket.on('login_success', () => {
+    loginModal.classList.add('hidden');
+});
+
+socket.on('login_fail', () => {
+    alert('Incorrect Password');
+    passInput.value = '';
+});
+
+// Identify as admin (will fail actions if not logged in via admin_login)
+// socket.emit('admin_connect'); // Removed
 
 socket.on('queue_update', (data) => {
     const serving = data.servingNumber;
@@ -23,11 +46,24 @@ socket.on('queue_update', (data) => {
         // item has .number and .name
         const div = document.createElement('div');
         div.className = 'list-item';
-        // Show absolute ticket number and name
-        div.innerHTML = `<span class="item-pos">#${item.number}</span> <span>${item.name}</span>`;
+        // HTML structure with Remove button
+        div.innerHTML = `
+            <div class="item-left">
+                <span class="item-pos">#${item.number}</span> 
+                <span>${item.name}</span>
+            </div>
+            <button class="remove-btn" onclick="removeUser(${item.number})">&times;</button>
+        `;
         listContainer.appendChild(div);
     });
 });
+
+// Expose removal function to window scope so onclick works
+window.removeUser = function (ticketId) {
+    if (confirm(`Remove ticket #${ticketId}?`)) {
+        socket.emit('admin_remove_ticket', ticketId);
+    }
+};
 
 document.getElementById('next-btn').addEventListener('click', () => {
     socket.emit('admin_next');
